@@ -10,17 +10,30 @@
 #define SERVER_PORT 7023
 #define MAX_BUF 1024
 #define BACKLOG 20
+#define NAME_SIZE 20
 
-char *header200 = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
 char *newbag(char *);
+void spilt(char spilt,char *s,char *name,char *type);
 
 int main(){
+
     struct sockaddr_in server_sockaddr,client_sockaddr;
-    char buffer[MAX_BUF];
+    char buffer_recv[MAX_BUF];
+    char file_name[NAME_SIZE];
+    char file_type[NAME_SIZE];
+    char file[NAME_SIZE];
+
+    char *html = "text/html\r\n\r\n";
+    char *css = "text/css\r\n\r\n";
+    char *gif = "image/gif\r\n\r\n";
+    char *png = "image/png\r\n\r\n";
+    char *jpeg = "image/jpeg\r\n\r\n";
+    char *header200 = "HTTP/1.1 200 OK\r\nContent-Type: ";
+
     int sin_len;
     char *new_bag;
-    char recv[MAX_BUF];
     int sock_fd,client_fd;
+
     server_sockaddr.sin_family = AF_INET;
     server_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     server_sockaddr.sin_port = htons(SERVER_PORT);
@@ -38,20 +51,48 @@ int main(){
         exit(EXIT_FAILURE);
     }
     printf("lisenting ...\n");
-    if((client_fd = accept(sock_fd,(struct sockaddr *)&client_sockaddr,&sin_len)) == -1){
-        fprintf(stderr,"accept failed\n");
-        exit(EXIT_FAILURE);
+    while(1){
+        if((client_fd = accept(sock_fd,(struct sockaddr *)&client_sockaddr,&sin_len)) == -1){
+            fprintf(stderr,"accept failed\n");
+            exit(EXIT_FAILURE);
+        }
+        if(recv(client_fd,buffer_recv,MAX_BUF,0) > 0){
+            // printf("buffer_recv: %s\n", buffer_recv);
+            sscanf(buffer_recv,"GET %s HTTP/1.1",file);
+        }
+        // printf("filename:%s\n",file);
+        spilt('.',file,file_name,file_type);
+        if(strcmp(file_type,"html") == 0)
+            strcat(header200,html);
+        else if(strcmp(file_type,"jpeg") == 0)
+            strcat(header200,jpeg);
+        else if(strcmp(file_type,"gif") == 0)
+            strcat(header200,gif);
+        else if(strcmp(file_type,"css") == 0)
+            strcat(header200,css);
+        else if(strcmp(file_type,"png") == 0)
+            strcat(header200,png);
+        send(client_fd,header200,strlen(header200),0);
+        send(client_fd,new_bag = newbag(file),strlen(new_bag),0);
     }
-    send(client_fd,header200,strlen(header200),0);
-    send(client_fd,(new_bag = newbag(buffer)),strlen(new_bag),0);
     close(sock_fd);
+    // if((client_fd = accept(sock_fd,(struct sockaddr *)&client_sockaddr,&sin_len)) == -1){
+    //     fprintf(stderr,"accept failed\n");
+    //     exit(EXIT_FAILURE);
+    // }
+    // send(client_fd,header200,strlen(header200),0);
+    // send(client_fd,(new_bag = newbag(buffer)),strlen(new_bag),0);
+    // close(sock_fd);
     return 0;
 }
 
-char *newbag(char buffer[MAX_BUF]){
+char *newbag(char *file){
     int c,i = 0;
     FILE *fd;
-    if((fd = fopen("test.html","r")) == NULL)
+    char buffer[MAX_BUF];
+    if(*file == '/' )
+        fd = fopen("test.html","r");
+    else if((fd = fopen(file,"r")) == NULL)
     {
         perror("fopen");
         exit(errno);
@@ -65,3 +106,25 @@ char *newbag(char buffer[MAX_BUF]){
     fclose(fd);
     return ret;
 }
+
+void spilt(char spilt,char *s,char *name,char *type){
+    int found;
+       if(*s == '\0'){
+        strcpy(name,"test");
+        strcpy(type,"html");
+        return;
+    }
+    for(found = 0;*s;s++){
+        if(*s == spilt)
+            found = 1;
+        else{
+            if(found)
+                *type++ = *s;
+            else
+                *name++ = *s;
+        }
+    }
+    return;
+}
+
+
