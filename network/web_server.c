@@ -8,11 +8,11 @@
 #include <errno.h>
 
 #define SERVER_PORT 7023
-#define MAX_BUF 1024
+#define MAX_BUF 1024000
 #define BACKLOG 20
 #define NAME_SIZE 20
 
-char *newbag(char *);
+size_t newbag(char *file, void **block);
 void spilt(char spilt,char *s,char *name,char *type);
 
 int main(){
@@ -21,17 +21,16 @@ int main(){
     char buffer_recv[MAX_BUF];
     char file_name[NAME_SIZE];
     char file_type[NAME_SIZE];
-    char file[NAME_SIZE];
+    char file_text[NAME_SIZE];
 
-    char *html = "text/html\r\n\r\n";
-    char *css = "text/css\r\n\r\n";
-    char *gif = "image/gif\r\n\r\n";
-    char *png = "image/png\r\n\r\n";
-    char *jpeg = "image/jpeg\r\n\r\n";
-    char *header200 = "HTTP/1.1 200 OK\r\nContent-Type: ";
+    char html[] = "text/html\r\n\r\n";
+    char css[] = "text/css\r\n\r\n";
+    char gif[] = "image/gif\r\n\r\n";
+    char png[] = "image/png\r\n\r\n";
+    char jpeg[] = "image/jpeg\r\n\r\n";
 
     int sin_len;
-    char *new_bag;
+    void *new_bag;
     int sock_fd,client_fd;
 
     server_sockaddr.sin_family = AF_INET;
@@ -50,30 +49,44 @@ int main(){
         fprintf(stderr,"listen failed\n");
         exit(EXIT_FAILURE);
     }
-    printf("lisenting ...\n");
+    printf("lisenting port %d...\n", SERVER_PORT);
     while(1){
+        char header200[] = "HTTP/1.1 200 OK\r\nContent-Type: ";
         if((client_fd = accept(sock_fd,(struct sockaddr *)&client_sockaddr,&sin_len)) == -1){
             fprintf(stderr,"accept failed\n");
             exit(EXIT_FAILURE);
         }
         if(recv(client_fd,buffer_recv,MAX_BUF,0) > 0){
             // printf("buffer_recv: %s\n", buffer_recv);
-            sscanf(buffer_recv,"GET %s HTTP/1.1",file);
+            sscanf(buffer_recv,"GET %s HTTP/1.1",file_text);
         }
-        // printf("filename:%s\n",file);
-        spilt('.',file,file_name,file_type);
-        if(strcmp(file_type,"html") == 0)
-            strcat(header200,html);
-        else if(strcmp(file_type,"jpeg") == 0)
-            strcat(header200,jpeg);
-        else if(strcmp(file_type,"gif") == 0)
-            strcat(header200,gif);
-        else if(strcmp(file_type,"css") == 0)
-            strcat(header200,css);
-        else if(strcmp(file_type,"png") == 0)
-            strcat(header200,png);
+        if(strcmp(file_text,"/") == 0){
+            strcpy(file_text, "/test.html");
+            // strcat(header200,html);
+            // printf("strcat\n");
+        }
+        printf("filename:%s\n",file_text);
+        // else
+        {
+            spilt('.', file_text, file_name, file_type);
+            if (strcmp(file_type, "html") == 0)
+                strcat(header200, html);
+            else if (strcmp(file_type, "jpeg") == 0)
+                strcat(header200, jpeg);
+            else if (strcmp(file_type, "gif") == 0)
+                strcat(header200, gif);
+            else if (strcmp(file_type, "css") == 0)
+                strcat(header200, css);
+            else if (strcmp(file_type, "png") == 0)
+                strcat(header200, png);
+        }
+        ssize_t send_byte = 0;
         send(client_fd,header200,strlen(header200),0);
-        send(client_fd,new_bag = newbag(file),strlen(new_bag),0);
+        printf("send the header200\n");
+        size_t bag_size = newbag(file_text, &new_bag);
+        send_byte = send(client_fd,new_bag, bag_size,0);
+        printf("send %lu success\n", send_byte);
+        close(client_fd);
     }
     close(sock_fd);
     // if((client_fd = accept(sock_fd,(struct sockaddr *)&client_sockaddr,&sin_len)) == -1){
@@ -86,25 +99,26 @@ int main(){
     return 0;
 }
 
-char *newbag(char *file){
+size_t newbag(char *file, void **block){
     int c,i = 0;
     FILE *fd;
-    char buffer[MAX_BUF];
-    if(*file == '/' )
+    printf("newbag %s\n",file);
+    if(strcmp(file,"/") == 0 ){
         fd = fopen("test.html","r");
-    else if((fd = fopen(file,"r")) == NULL)
+        printf("open the file test.html\n");
+    }
+    else if((fd = fopen(file + 1,"r")) == NULL)
     {
         perror("fopen");
         exit(errno);
     }
-    while((c = getc(fd)) != EOF)
-        buffer[i++] = (char)c;
-    buffer[i] = '\0';
+    *block = malloc(sizeof(char) * MAX_BUF);
+    size_t fread_num = fread(*block, sizeof(char), MAX_BUF, fd);
+    printf("fread %lu\n", fread_num );
     // printf("buffer = %s\n",buffer);
-    char *ret = (char *)malloc(sizeof(char) * i + 1);
-    strcpy(ret,buffer);
+    // memcpy(ret, buffer, fread_num);
     fclose(fd);
-    return ret;
+    return fread_num;
 }
 
 void spilt(char spilt,char *s,char *name,char *type){
