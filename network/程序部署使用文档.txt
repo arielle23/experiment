@@ -1,0 +1,10 @@
+设计思路：通过socket创建套接字，并bind连接，通过accept来获取客户端套接字，并使用recv获取request中的请求。文件以block的方式传送。
+
+环境：LINUX
+gcc web_serber.c -o web_server
+/.web_server
+
+端口号：7023
+输入 localhost:7023 即可访问
+
+共有两个页面，在两个页面中可以相互跳转，共包含一个图片和一个视频。

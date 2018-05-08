@@ -48,12 +48,6 @@ int main(){
         perror("sem_init sem_full");
         exit(errno);
     }
-    /* int temp; */
-    /* sem_getvalue(&sem_full, &temp); */
-    /* printf("main sem_full = %d\n", temp); */
-    /* sem_getvalue(&sem_empty, &temp); */
-    /* printf("main sem_empty = %d\n", temp); */
-    /* fflush(stdout); */
     fd = fopen("test.txt","r");
     int shmid;
     shm = NULL; // initialize the shm pointer
@@ -64,7 +58,7 @@ int main(){
     for(k = 0; k < BUFFER_N; k++)
         *((char *)shm + k) = '\0';
     for(i = 0; i < PRODUCER_N; i++){
-        id_p =malloc(sizeof(int));
+        id_p = (int *)malloc(sizeof(int));
         *id_p = i;
         // printf("*id_p = %d\n", *id_p);
         pthread_create(p_tid + i,NULL,producer,id_p);
@@ -82,8 +76,10 @@ int main(){
     {
         pthread_join(c_tid[i], &ret_val);
     }
-    free(id_p);
-    free(id_c);
+    // free(id_p);
+    // id_p = NULL;
+    // free(id_c);
+    // id_c = NULL;
 }
 
 void *consumer(void *number){
@@ -130,15 +126,7 @@ void *producer(void *number){
         /* sem_getvalue(&sem_empty, &temp); */
         /* printf("before sem_empty = %d\n", temp); */
         /* fflush(stdout); */
-
         sem_wait(&sem_empty);
-
-        /* sem_getvalue(&sem_full, &temp); */
-        /* printf("p sem_full = %d\n", temp); */
-        /* sem_getvalue(&sem_empty, &temp); */
-        /* printf("p sem_empty = %d\n", temp); */
-        /* fflush(stdout); */
-
         pthread_mutex_lock(&mutex);
         sp = find_empty(shm,BUFFER_N);
         *((char *)shm + sp) = c;
