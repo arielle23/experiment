@@ -1,0 +1,20 @@
+*** Creating Trace Output File 'µËÇÉ.tra' Ok.
+### Preparing for ADS-LD.
+### Creating ADS-LD Command Line
+### List of Objects: adding '"test.o"'
+### List of Objects: adding '"test2.o"'
+### ADS-LD Command completed:
+--cpu ARM920T "test.o" "test2.o" 
+--ro-base 0x00000000 --entry 0x00000000 --rw-base 0x40000000 --strict --summary_stderr --info summarysizes --map --xref --callgraph --symbols 
+--info sizes --info totals --info unused --info veneers 
+ --list ".\µËÇÉ.map" -o µËÇÉ.axf### Preparing Environment (PrepEnvAds)
+### ADS-LD Output File: 'µËÇÉ.axf'
+### ADS-LD Command File: 'µËÇÉ.lnp'
+### Checking for dirty Components...
+### Creating CmdFile 'µËÇÉ.lnp', Handle=0x000009CC
+### Writing '.lnp' file
+### ADS-LD Command file 'µËÇÉ.lnp' is ready.
+### ADS-LD: About to start ADS-LD Thread.
+### ADS-LD: executed with 0 errors
+### Updating obj list
+### LDADS_file() completed.

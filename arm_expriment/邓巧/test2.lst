@@ -1,0 +1,40 @@
+
+
+
+ARM Macro Assembler    Page 1 
+
+
+    1 00000000                 area             test,CODE,READONLY
+    2 00000000                 code32
+    3 00000000                 ENTRY
+    4 00000000 E3A01001        MOV              R1, #1
+    5 00000004 E3A00101        LDR              R0, =0x40000000
+    6 00000008 E3A0A445        LDR              R10, =0x45000000
+    7 0000000C         ;STR R1, [R0]
+    8 0000000C         ;LDR R2, [R0]
+    9 0000000C E3E03000        MOV              R3, 0xFFFFFFFF
+   10 00000010 E5CA3000        STRB             R3, [R10]
+   11 00000014 E59A4000        LDR              R4, [R10]
+   12 00000018         ;STRH R3, [R0]
+   13 00000018         ;LDRH R2, [R0]
+   14 00000018         
+   15 00000018                 END
+Command Line: --debug --xref --cpu=ARM920T --apcs=interwork --depend=test2.d -o
+test2.o -IC:\Keil\ARM\RV31\INC -IC:\Keil\ARM\CMSIS\Include -IC:\Keil\ARM\Inc\Sa
+msung --predefine="__EVAL SETA 1" --list=test2.lst test2.s
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+test 00000000
+
+Symbol: test
+   Definitions
+      At line 1 in file test2.s
+   Uses
+      None
+Comment: test unused
+1 symbol
+332 symbols in table

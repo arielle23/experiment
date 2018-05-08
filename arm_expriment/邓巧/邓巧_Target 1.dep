@@ -1,0 +1,3 @@
+Dependencies for Project 'µËÇÉ', Target 'Target 1': (DO NOT MODIFY !)
+F (.\test.s)(0x5AF04A56)(--cpu ARM920T --pd "__EVAL SETA 1" -g --apcs=interwork -I C:\Keil\ARM\RV31\INC -I C:\Keil\ARM\CMSIS\Include -I C:\Keil\ARM\Inc\Samsung --list "test.lst" --xref -o "test.o" --depend "test.d")
+F (.\test2.s)(0x5AF04E29)(--cpu ARM920T --pd "__EVAL SETA 1" -g --apcs=interwork -I C:\Keil\ARM\RV31\INC -I C:\Keil\ARM\CMSIS\Include -I C:\Keil\ARM\Inc\Samsung --list "test2.lst" --xref -o "test2.o" --depend "test2.d")
